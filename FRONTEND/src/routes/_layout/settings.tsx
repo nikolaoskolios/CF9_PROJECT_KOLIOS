@@ -1,0 +1,58 @@
+import { createFileRoute } from "@tanstack/react-router"
+
+import ChangeEmail from "@/components/UserSettings/ChangeEmail"
+import ChangePassword from "@/components/UserSettings/ChangePassword"
+import UserInformation from "@/components/UserSettings/UserInformation"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import useAuth from "@/hooks/useAuth"
+
+const tabsConfig = [
+  { value: "my-profile", title: "My profile", component: UserInformation },
+  { value: "email", title: "Email", component: ChangeEmail },
+  { value: "password", title: "Password", component: ChangePassword },
+]
+
+export const Route = createFileRoute("/_layout/settings")({
+  component: UserSettings,
+  head: () => ({
+    meta: [
+      {
+        title: "Account - Death Star Test Data",
+      },
+    ],
+  }),
+})
+
+function UserSettings() {
+  const { user: currentUser } = useAuth()
+
+  if (!currentUser) {
+    return null
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Account</h1>
+        <p className="text-muted-foreground">
+          Manage your account settings and preferences
+        </p>
+      </div>
+
+      <Tabs defaultValue="my-profile">
+        <TabsList>
+          {tabsConfig.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.title}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {tabsConfig.map((tab) => (
+          <TabsContent key={tab.value} value={tab.value}>
+            <tab.component />
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
+  )
+}

@@ -1,0 +1,23 @@
+# --- Python (BACKEND) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Live API credential - grants write access to the backend, never commit
+api_token.json
+
+# --- Node (FRONTEND) - redundant with FRONTEND/.gitignore, kept here too ---
+node_modules/
+dist/
+dist-ssr/
+.tanstack/
+
+# --- Editor / OS ---
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
