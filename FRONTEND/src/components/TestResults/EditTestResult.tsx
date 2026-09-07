@@ -4,7 +4,7 @@ import { Pencil } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 
-import { AdminService, type TestResultResponse } from "@/client"
+import { AdminService, type TestResultRequest, type TestResultResponse } from "@/client"
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,7 @@ import { SUBSYSTEM_TEST_FIELDS } from "@/lib/testResultFields"
 import {
   type TestResultFormData,
   testResultFormSchema,
+  toTestResultRequest,
 } from "@/schemas/testResults"
 import { handleError } from "@/utils"
 
@@ -48,18 +49,18 @@ const EditTestResult = ({ testResult, onSuccess }: EditTestResultProps) => {
     defaultValues: {
       test_date: testResult.test_date,
       build: testResult.build,
-      overall_test_rate: testResult.overall_test_rate ?? undefined,
+      overall_test_rate: testResult.overall_test_rate?.toString() ?? undefined,
       ...Object.fromEntries(
         SUBSYSTEM_TEST_FIELDS.map((field) => [
           field.name,
-          testResult[field.name] ?? undefined,
+          testResult[field.name]?.toString() ?? undefined,
         ]),
       ),
     },
   })
 
   const mutation = useMutation({
-    mutationFn: (data: TestResultFormData) =>
+    mutationFn: (data: TestResultRequest) =>
       AdminService.updateTestResultAdminTestResultsTestResultIdPut({
         testResultId: testResult.id,
         requestBody: data,
@@ -76,7 +77,7 @@ const EditTestResult = ({ testResult, onSuccess }: EditTestResultProps) => {
   })
 
   const onSubmit = (data: TestResultFormData) => {
-    mutation.mutate(data)
+    mutation.mutate(toTestResultRequest(data))
   }
 
   return (

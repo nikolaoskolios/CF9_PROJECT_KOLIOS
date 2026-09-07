@@ -1,14 +1,9 @@
 import {
   Circle,
   Code2,
-  Earth,
   GitCompare,
-  Home,
-  Moon,
-  MoonIcon,
   Rocket,
   Search,
-  Sun,
   UserCog,
   Users,
 } from "lucide-react"

@@ -43,7 +43,10 @@ function SearchPage() {
   const [page, setPage] = useState(0)
   const [pageSize, setPageSize] = useState(20)
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error } = useQuery<
+    PaginatedTestResults,
+    ApiError
+  >({
     queryKey: ["test-results-query", submittedQuery, page, pageSize],
     queryFn: () =>
       TestResultsService.queryTestResultsTestResultsQueryGet({
@@ -103,7 +106,7 @@ function SearchPage() {
           ) : (
             <PaginatedTestResultsTable
               columns={columns}
-              data={data as PaginatedTestResults}
+              data={data}
               page={page}
               pageSize={pageSize}
               onPageChange={setPage}

@@ -1,19 +1,25 @@
 import { z } from "zod"
 
-import { SUBSYSTEM_TEST_FIELDS } from "@/lib/testResultFields"
+import type { TestResultRequest } from "@/client"
+import { type SubsystemTestField, SUBSYSTEM_TEST_FIELDS } from "@/lib/testResultFields"
 
-const optionalPercentage = z.preprocess(
-  (val) => (val === "" || val === undefined ? undefined : Number(val)),
-  z
-    .number()
-    .min(0, { message: "Must be at least 0" })
-    .max(100, { message: "Must be at most 100" })
-    .optional(),
+// Percentage inputs come from <input type="number"> via react-hook-form as
+// plain strings. Validated here as optional numeric strings in [0, 100] and
+// converted to numbers only when building the API request (toTestResultRequest
+// below) - keeping the schema's input and output types identical (no
+// z.preprocess/transform) avoids react-hook-form + zod generic mismatches.
+const optionalPercentage = z.string().optional().refine(
+  (val) => {
+    if (val === undefined || val === "") return true
+    const num = Number(val)
+    return !Number.isNaN(num) && num >= 0 && num <= 100
+  },
+  { message: "Must be a number between 0 and 100" },
 )
 
 const subsystemFieldsShape = Object.fromEntries(
   SUBSYSTEM_TEST_FIELDS.map((field) => [field.name, optionalPercentage]),
-)
+) as Record<SubsystemTestField, typeof optionalPercentage>
 
 export const testResultFormSchema = z.object({
   test_date: z.string().min(1, { message: "Date is required" }),
@@ -23,3 +29,24 @@ export const testResultFormSchema = z.object({
 })
 
 export type TestResultFormData = z.infer<typeof testResultFormSchema>
+
+function toPercentage(value: string | undefined): number | undefined {
+  if (value === undefined || value === "") return undefined
+  return Number(value)
+}
+
+export function toTestResultRequest(
+  data: TestResultFormData,
+): TestResultRequest {
+  return {
+    test_date: data.test_date,
+    build: data.build,
+    overall_test_rate: toPercentage(data.overall_test_rate),
+    ...Object.fromEntries(
+      SUBSYSTEM_TEST_FIELDS.map((field) => [
+        field.name,
+        toPercentage(data[field.name]),
+      ]),
+    ),
+  } as TestResultRequest
+}

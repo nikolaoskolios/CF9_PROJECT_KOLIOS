@@ -31,6 +31,7 @@ import { SUBSYSTEM_TEST_FIELDS } from "@/lib/testResultFields"
 import {
   type TestResultFormData,
   testResultFormSchema,
+  toTestResultRequest,
 } from "@/schemas/testResults"
 import { handleError } from "@/utils"
 
@@ -71,7 +72,7 @@ const AddTestResult = () => {
   })
 
   const onSubmit = (data: TestResultFormData) => {
-    mutation.mutate(data)
+    mutation.mutate(toTestResultRequest(data))
   }
 
   return (
