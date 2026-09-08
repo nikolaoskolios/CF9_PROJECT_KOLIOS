@@ -50,7 +50,7 @@ export const adminColumns: ColumnDef<TestResultResponse>[] = [
   },
   {
     accessorKey: "owner_id",
-    header: "Owner",
+    header: "Submitter",
     cell: ({ row }) => (
       <span className="text-muted-foreground">#{row.original.owner_id}</span>
     ),

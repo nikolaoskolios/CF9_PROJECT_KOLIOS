@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from starlette import status
-from ..models import TestResults
+from ..models import TestResults, SUBSYSTEM_TEST_FIELDS, compute_overall_test_rate
 from ..database import SessionLocal
 from ..query_language import parse_query_expression, QuerySyntaxError
 from .auth import get_current_user, get_current_user_or_api_key
@@ -51,7 +51,8 @@ class TestResultRequest(BaseModel):
 
     test_date: date
     build: str = Field(min_length=3)
-    overall_test_rate: Optional[float] = Field(default=None, ge=0, le=100)
+    # overall_test_rate is not accepted here - it's computed server-side as
+    # the average of the subsystem tests below (see compute_overall_test_rate).
     superlaser_concentration_static_check: Optional[float] = Field(default=None, ge=0, le=100)
     hypermatter_reactor_core_startup_test: Optional[float] = Field(default=None, ge=0, le=100)
     sublight_ion_engines_sanity_check: Optional[float] = Field(default=None, ge=0, le=100)
@@ -103,7 +104,7 @@ async def read_all(user: user_dependency, db: db_dependency,
 
     base_query = db.query(TestResults)
     total = base_query.count()
-    records = base_query.order_by(TestResults.id).offset(skip).limit(limit).all()
+    records = base_query.order_by(TestResults.id.desc()).offset(skip).limit(limit).all()
 
     if attribute is None:
         items = [TestResultResponse.model_validate(record).model_dump() for record in records]
@@ -135,7 +136,7 @@ async def query_test_results(user: user_dependency, db: db_dependency,
 
     base_query = db.query(TestResults).filter(condition)
     total = base_query.count()
-    records = base_query.order_by(TestResults.id).offset(skip).limit(limit).all()
+    records = base_query.order_by(TestResults.id.desc()).offset(skip).limit(limit).all()
     items = [TestResultResponse.model_validate(record).model_dump() for record in records]
 
     return {'items': items, 'total': total, 'skip': skip, 'limit': limit}
@@ -157,7 +158,10 @@ async def create_test_result(user: user_or_api_key_dependency, db: db_dependency
                              test_result_request: TestResultRequest):
     if user is None:
         raise HTTPException(status_code=401, detail='Authentication Failed')
-    test_result_model = TestResults(**test_result_request.model_dump(), owner_id=user.get('id'))
+
+    data = test_result_request.model_dump()
+    overall_test_rate = compute_overall_test_rate(data[field] for field in SUBSYSTEM_TEST_FIELDS)
+    test_result_model = TestResults(**data, overall_test_rate=overall_test_rate, owner_id=user.get('id'))
 
     db.add(test_result_model)
     db.commit()

@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ReadAllAdminTestResultsGetResponse, UpdateTestResultAdminTestResultsTestResultIdPutData, UpdateTestResultAdminTestResultsTestResultIdPutResponse, DeleteTestResultAdminTestResultsTestResultIdDeleteData, DeleteTestResultAdminTestResultsTestResultIdDeleteResponse, CreateUserAdminUserPostData, CreateUserAdminUserPostResponse, CreateUserAuthPostData, CreateUserAuthPostResponse, LoginForAccessTokenAuthTokenPostData, LoginForAccessTokenAuthTokenPostResponse, GenerateApiKeyAuthApiKeyPostResponse, HealthCheckHealthyGetResponse, ReadAllTestResultsGetData, ReadAllTestResultsGetResponse, CreateTestResultTestResultsPostData, CreateTestResultTestResultsPostResponse, QueryTestResultsTestResultsQueryGetData, QueryTestResultsTestResultsQueryGetResponse, ReadTestResultTestResultsTestResultIdGetData, ReadTestResultTestResultsTestResultIdGetResponse, GetUserUserGetResponse, ChangePasswordUserPasswordPutData, ChangePasswordUserPasswordPutResponse, ChangeEmailUserEmailEmailPutData, ChangeEmailUserEmailEmailPutResponse } from './types.gen';
+import type { ReadAllAdminTestResultsGetResponse, UpdateTestResultAdminTestResultsTestResultIdPutData, UpdateTestResultAdminTestResultsTestResultIdPutResponse, DeleteTestResultAdminTestResultsTestResultIdDeleteData, DeleteTestResultAdminTestResultsTestResultIdDeleteResponse, ReadAllUsersAdminUserGetResponse, CreateUserAdminUserPostData, CreateUserAdminUserPostResponse, DeleteUserAdminUserUserIdDeleteData, DeleteUserAdminUserUserIdDeleteResponse, CreateUserAuthPostData, CreateUserAuthPostResponse, LoginForAccessTokenAuthTokenPostData, LoginForAccessTokenAuthTokenPostResponse, GenerateApiKeyAuthApiKeyPostResponse, HealthCheckHealthyGetResponse, ReadAllTestResultsGetData, ReadAllTestResultsGetResponse, CreateTestResultTestResultsPostData, CreateTestResultTestResultsPostResponse, QueryTestResultsTestResultsQueryGetData, QueryTestResultsTestResultsQueryGetResponse, ReadTestResultTestResultsTestResultIdGetData, ReadTestResultTestResultsTestResultIdGetResponse, GetUserUserGetResponse, ChangePasswordUserPasswordPutData, ChangePasswordUserPasswordPutResponse, ChangeEmailUserEmailEmailPutData, ChangeEmailUserEmailEmailPutResponse } from './types.gen';
 
 export class AdminService {
     /**
@@ -62,6 +62,18 @@ export class AdminService {
     }
     
     /**
+     * Read All Users
+     * @returns UserResponse Successful Response
+     * @throws ApiError
+     */
+    public static readAllUsersAdminUserGet(): CancelablePromise<ReadAllUsersAdminUserGetResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin/user'
+        });
+    }
+    
+    /**
      * Create User
      * @param data The data for the request.
      * @param data.requestBody
@@ -74,6 +86,26 @@ export class AdminService {
             url: '/admin/user',
             body: data.requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete User
+     * @param data The data for the request.
+     * @param data.userId
+     * @returns void Successful Response
+     * @throws ApiError
+     */
+    public static deleteUserAdminUserUserIdDelete(data: DeleteUserAdminUserUserIdDeleteData): CancelablePromise<DeleteUserAdminUserUserIdDeleteResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/admin/user/{user_id}',
+            path: {
+                user_id: data.userId
+            },
             errors: {
                 422: 'Validation Error'
             }

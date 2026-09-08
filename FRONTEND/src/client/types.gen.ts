@@ -37,7 +37,6 @@ export type PaginatedTestResults = {
 export type TestResultRequest = {
     test_date: string;
     build: string;
-    overall_test_rate?: (number | null);
     superlaser_concentration_static_check?: (number | null);
     hypermatter_reactor_core_startup_test?: (number | null);
     sublight_ion_engines_sanity_check?: (number | null);
@@ -114,11 +113,19 @@ export type DeleteTestResultAdminTestResultsTestResultIdDeleteData = {
 
 export type DeleteTestResultAdminTestResultsTestResultIdDeleteResponse = (void);
 
+export type ReadAllUsersAdminUserGetResponse = (Array<UserResponse>);
+
 export type CreateUserAdminUserPostData = {
     requestBody: CreateUserRequest;
 };
 
 export type CreateUserAdminUserPostResponse = (unknown);
+
+export type DeleteUserAdminUserUserIdDeleteData = {
+    userId: number;
+};
+
+export type DeleteUserAdminUserUserIdDeleteResponse = (void);
 
 export type CreateUserAuthPostData = {
     requestBody: CreateUserRequest;

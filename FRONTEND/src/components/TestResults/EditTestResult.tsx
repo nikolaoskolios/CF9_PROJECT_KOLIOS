@@ -49,7 +49,6 @@ const EditTestResult = ({ testResult, onSuccess }: EditTestResultProps) => {
     defaultValues: {
       test_date: testResult.test_date,
       build: testResult.build,
-      overall_test_rate: testResult.overall_test_rate?.toString() ?? undefined,
       ...Object.fromEntries(
         SUBSYSTEM_TEST_FIELDS.map((field) => [
           field.name,
@@ -126,27 +125,6 @@ const EditTestResult = ({ testResult, onSuccess }: EditTestResultProps) => {
                     </FormLabel>
                     <FormControl>
                       <Input type="text" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="overall_test_rate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Overall Test Rate (%)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={100}
-                        step="0.1"
-                        {...field}
-                        value={field.value ?? ""}
-                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

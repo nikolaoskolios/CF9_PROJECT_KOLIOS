@@ -1,10 +1,11 @@
-from ..routers.test_results import get_db, get_current_user
+from ..routers.test_results import get_db, get_current_user, get_current_user_or_api_key
 from fastapi import status
 from ..models import TestResults
 from .utils import *
 
 app.dependency_overrides[get_db] = override_get_db
 app.dependency_overrides[get_current_user] = override_get_current_user
+app.dependency_overrides[get_current_user_or_api_key] = override_get_current_user
 
 
 def test_read_all_authenticated(test_test_result):
@@ -33,6 +34,8 @@ def test_read_all_pagination(test_test_result):
     ])
     db.commit()
 
+    # Newest-first ordering (id descending), so the first page holds the
+    # two highest ids and the second page holds the lowest one.
     response = client.get("/test-results/?skip=0&limit=2")
     assert response.status_code == status.HTTP_200_OK
     body = response.json()
@@ -40,14 +43,14 @@ def test_read_all_pagination(test_test_result):
     assert body['skip'] == 0
     assert body['limit'] == 2
     assert len(body['items']) == 2
-    assert body['items'][0]['id'] == 1
+    assert body['items'][0]['id'] == 3
     assert body['items'][1]['id'] == 2
 
     response = client.get("/test-results/?skip=2&limit=2")
     body = response.json()
     assert body['total'] == 3
     assert len(body['items']) == 1
-    assert body['items'][0]['id'] == 3
+    assert body['items'][0]['id'] == 1
 
 
 def test_read_all_limit_capped_at_100():
@@ -209,7 +212,6 @@ def test_create_test_result(test_test_result):
     request_data = {
         'test_date': '2026-08-29',
         'build': 'death_star_iter_139.002',
-        'overall_test_rate': 92.0,
         'superlaser_concentration_static_check': None,
         'hypermatter_reactor_core_startup_test': None,
         'sublight_ion_engines_sanity_check': None,
@@ -228,9 +230,44 @@ def test_create_test_result(test_test_result):
     db = TestingSessionLocal()
     model = db.query(TestResults).filter(TestResults.id == 2).first()
     assert model.build == request_data['build']
-    assert model.overall_test_rate == request_data['overall_test_rate']
+    # overall_test_rate is computed server-side: average of the 6 non-null
+    # subsystem scores above (100, 100, 100, 100, 65, 0) = 77.5.
+    assert model.overall_test_rate == 77.5
     assert model.superlaser_concentration_static_check is None
     assert model.kyber_crystal_sample_response_test == 0.0
+
+
+def test_create_test_result_ignores_overall_test_rate_in_payload(test_test_result):
+    # Even if a client still sends overall_test_rate, it's silently ignored -
+    # it's not a field on the request schema, so it never reaches the model.
+    request_data = {
+        'test_date': '2026-08-29',
+        'build': 'death_star_iter_139.010',
+        'overall_test_rate': 1.0,
+        'superlaser_concentration_static_check': 100.0,
+        'hypermatter_reactor_core_startup_test': 100.0,
+    }
+
+    response = client.post('/test-results/', json=request_data)
+    assert response.status_code == 201
+
+    db = TestingSessionLocal()
+    model = db.query(TestResults).filter(TestResults.id == 2).first()
+    assert model.overall_test_rate == 100.0
+
+
+def test_create_test_result_all_subsystems_null_gives_null_overall(test_test_result):
+    request_data = {
+        'test_date': '2026-08-29',
+        'build': 'death_star_iter_139.011',
+    }
+
+    response = client.post('/test-results/', json=request_data)
+    assert response.status_code == 201
+
+    db = TestingSessionLocal()
+    model = db.query(TestResults).filter(TestResults.id == 2).first()
+    assert model.overall_test_rate is None
 
 
 def test_create_test_result_build_too_short():

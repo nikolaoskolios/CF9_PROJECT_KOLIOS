@@ -24,7 +24,8 @@ const subsystemFieldsShape = Object.fromEntries(
 export const testResultFormSchema = z.object({
   test_date: z.string().min(1, { message: "Date is required" }),
   build: z.string().min(3, { message: "Build must be at least 3 characters" }),
-  overall_test_rate: optionalPercentage,
+  // overall_test_rate isn't collected here - the backend computes it as the
+  // average of the subsystem tests below.
   ...subsystemFieldsShape,
 })
 
@@ -41,7 +42,6 @@ export function toTestResultRequest(
   return {
     test_date: data.test_date,
     build: data.build,
-    overall_test_rate: toPercentage(data.overall_test_rate),
     ...Object.fromEntries(
       SUBSYSTEM_TEST_FIELDS.map((field) => [
         field.name,

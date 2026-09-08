@@ -18,7 +18,6 @@ def test_admin_update_test_result(test_test_result):
     request_data = {
         'test_date': '2026-08-28',
         'build': 'death_star_iter_139.001',
-        'overall_test_rate': 84.0,
         'superlaser_concentration_static_check': 84.0,
         'hypermatter_reactor_core_startup_test': 100.0,
         'sublight_ion_engines_sanity_check': 100.0,
@@ -36,7 +35,9 @@ def test_admin_update_test_result(test_test_result):
 
     db = TestingSessionLocal()
     model = db.query(TestResults).filter(TestResults.id == 1).first()
-    assert model.overall_test_rate == 84.0
+    # overall_test_rate is recomputed from the subsystem scores above:
+    # (84 + 100*9) / 10 = 98.4.
+    assert model.overall_test_rate == 98.4
     assert model.superlaser_concentration_static_check == 84.0
     assert model.owner_id == 1  # ownership untouched by the update
 
@@ -51,13 +52,14 @@ def test_admin_update_test_result_ignores_owner(test_test_result):
     request_data = {
         'test_date': '2026-08-28',
         'build': 'death_star_iter_139.001',
-        'overall_test_rate': 50.0,
+        'kyber_crystal_sample_response_test': 50.0,
     }
     response = client.put('/admin/test-results/1', json=request_data)
     assert response.status_code == 204
 
     db = TestingSessionLocal()
     model = db.query(TestResults).filter(TestResults.id == 1).first()
+    # Only one subsystem score given, so the average equals it exactly.
     assert model.overall_test_rate == 50.0
     assert model.owner_id == 2
 

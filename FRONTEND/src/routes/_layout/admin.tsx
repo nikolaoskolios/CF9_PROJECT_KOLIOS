@@ -4,6 +4,7 @@ import { Suspense } from "react"
 
 import { AdminService, UserService } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
+import DeleteUser from "@/components/Admin/DeleteUser"
 import PendingTestResults from "@/components/Pending/PendingTestResults"
 import { DataTable } from "@/components/Common/DataTable"
 import AddTestResult from "@/components/TestResults/AddTestResult"
@@ -72,6 +73,11 @@ function Admin() {
           </div>
           <AddUser />
         </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground">Delete user account</p>
+        <DeleteUser />
       </div>
 
       <div className="flex flex-col gap-6">

@@ -46,11 +46,11 @@ export const SUBSYSTEM_TEST_FIELDS = [
 
 export type SubsystemTestField = (typeof SUBSYSTEM_TEST_FIELDS)[number]["name"]
 
-// Shared thresholds for the score badges: 0-89% red, 90-97% orange, 98-100% green.
+// Shared thresholds for the score badges: 0-84% red, 85-95% orange, 96-100% green.
 export function getScoreBadgeVariant(
   value: number,
 ): "default" | "warning" | "destructive" {
-  if (value >= 98) return "default"
-  if (value >= 90) return "warning"
+  if (value > 95) return "default"
+  if (value >= 85) return "warning"
   return "destructive"
 }

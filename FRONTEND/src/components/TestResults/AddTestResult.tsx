@@ -38,7 +38,6 @@ import { handleError } from "@/utils"
 const defaultValues: TestResultFormData = {
   test_date: "",
   build: "",
-  overall_test_rate: undefined,
   ...Object.fromEntries(
     SUBSYSTEM_TEST_FIELDS.map((field) => [field.name, undefined]),
   ),
@@ -123,28 +122,6 @@ const AddTestResult = () => {
                         type="text"
                         {...field}
                         required
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="overall_test_rate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Overall Test Rate (%)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={100}
-                        step="0.1"
-                        placeholder="e.g. 99"
-                        {...field}
-                        value={field.value ?? ""}
                       />
                     </FormControl>
                     <FormMessage />

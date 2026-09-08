@@ -32,6 +32,17 @@ SUBSYSTEM_TEST_FIELDS = [
 ]
 
 
+def compute_overall_test_rate(subsystem_values):
+    """Average of the given subsystem scores, ignoring any that are None.
+
+    Returns None if every value is None (nothing to average).
+    """
+    present = [value for value in subsystem_values if value is not None]
+    if not present:
+        return None
+    return round(sum(present) / len(present), 2)
+
+
 class TestResults(Base):
     __tablename__ = 'test_results'
     __test__ = False  # not a pytest test class, despite the name

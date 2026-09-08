@@ -158,19 +158,6 @@ export const TestResultRequestSchema = {
             minLength: 3,
             title: 'Build'
         },
-        overall_test_rate: {
-            anyOf: [
-                {
-                    type: 'number',
-                    maximum: 100,
-                    minimum: 0
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Overall Test Rate'
-        },
         superlaser_concentration_static_check: {
             anyOf: [
                 {
