@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { createFileRoute, redirect } from "@tanstack/react-router"
+import { createFileRoute, Link, redirect } from "@tanstack/react-router"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -188,6 +188,13 @@ function SignUp() {
             <LoadingButton type="submit" loading={signUpMutation.isPending}>
               Sign Up
             </LoadingButton>
+
+            <p className="text-center text-sm text-muted-foreground">
+              <Link to="/login" className="underline underline-offset-4">
+                Sign In
+              </Link>{" "}
+              instead
+            </p>
           </div>
         </form>
       </Form>

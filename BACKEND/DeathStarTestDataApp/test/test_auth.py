@@ -56,3 +56,37 @@ async def test_get_current_user_missing_payload():
 
     assert excinfo.value.status_code == 401
     assert excinfo.value.detail == 'Could not validate user.'
+
+
+def test_login_rate_limited_after_five_attempts(test_user):
+    # 5/minute on /auth/token - the first 5 requests are each judged on their
+    # own merits (wrong password -> 401 every time); the 6th is blocked by
+    # the limiter itself before authentication even runs.
+    for _ in range(5):
+        response = client.post('/auth/token', data={
+            'username': test_user.username, 'password': 'wrongpassword',
+        })
+        assert response.status_code == 401
+
+    response = client.post('/auth/token', data={
+        'username': test_user.username, 'password': 'wrongpassword',
+    })
+    assert response.status_code == 429
+
+
+def test_generate_api_key_rate_limited_after_five_attempts(test_user):
+    app.dependency_overrides[get_current_user] = lambda: {
+        'username': test_user.username, 'id': test_user.id, 'user_role': test_user.role,
+    }
+    try:
+        for _ in range(5):
+            response = client.post('/auth/api-key')
+            assert response.status_code == 200
+
+        response = client.post('/auth/api-key')
+        assert response.status_code == 429
+    finally:
+        # Restore, don't delete - other test modules set this override once
+        # at import time (not per-test), so deleting it would leave it
+        # missing for every test that runs after this one in the suite.
+        app.dependency_overrides[get_current_user] = override_get_current_user

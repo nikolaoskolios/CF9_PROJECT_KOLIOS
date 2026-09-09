@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 import pytest
 from ..models import TestResults, Users
 from ..routers.auth import bcrypt_context
+from ..rate_limit import limiter
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./testdb.db"
 
@@ -32,6 +33,16 @@ def override_get_current_user():
     return {'username': 'vader', 'id': 1, 'user_role': 'admin'}
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limits():
+    # The limiter's counters are process-wide and keyed by client address,
+    # which TestClient always reports the same for every test - without this,
+    # one test's requests to a rate-limited route would count against the
+    # next test's limit.
+    limiter.reset()
+
 
 @pytest.fixture
 def test_test_result():

@@ -1,13 +1,17 @@
 import hashlib
+import os
 import secrets
 from datetime import timedelta, datetime, timezone
+from pathlib import Path
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, HTTPException
+from dotenv import load_dotenv
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from starlette import status
 from ..database import SessionLocal
 from ..models import Users
+from ..rate_limit import limiter
 from passlib.context import CryptContext
 from fastapi.security import APIKeyHeader, OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -17,7 +21,11 @@ router = APIRouter(
     tags=['auth']
 )
 
-SECRET_KEY = 'd9f8b6a1c3e47f0b2a5d6c8e1f3a9b7d4c2e0f8a6b1d3c5e7f9a1b3d5c7e9f1'
+# Explicit path (rather than relying on cwd) so this loads the same way
+# whether the app is started from BACKEND/ or tests are run from elsewhere.
+load_dotenv(Path(__file__).resolve().parent.parent.parent / '.env')
+
+SECRET_KEY = os.environ['SECRET_KEY']
 ALGORITHM = 'HS256'
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
@@ -140,7 +148,9 @@ async def create_user(db: db_dependency,
 
 
 @router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+@limiter.limit("15/minute")
+async def login_for_access_token(request: Request,
+                                 form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                                  db: db_dependency):
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
@@ -152,7 +162,8 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
 
 @router.post("/api-key", response_model=ApiKeyResponse)
-async def generate_api_key(db: db_dependency,
+@limiter.limit("15/minute")
+async def generate_api_key(request: Request, db: db_dependency,
                            user: Annotated[dict, Depends(get_current_user)]):
     """Generate a new long-lived API key for the logged-in user, replacing
     any previous one. The plaintext key is only ever returned here - only
