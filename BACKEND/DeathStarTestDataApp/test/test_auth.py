@@ -1,11 +1,18 @@
 from .utils import *
-from ..routers.auth import get_db, authenticate_user, create_access_token, SECRET_KEY, ALGORITHM, get_current_user
+from ..routers.auth import (
+    get_db, authenticate_user, create_access_token, SECRET_KEY, ALGORITHM,
+    get_current_user, AUTH_RATE_LIMIT,
+)
 from jose import jwt
 from datetime import timedelta
 import pytest
 from fastapi import HTTPException
 
 app.dependency_overrides[get_db] = override_get_db
+
+# e.g. "15/minute" -> 15 - read from the router so this can never silently
+# drift out of sync with the actual configured limit (see AUTH_RATE_LIMIT).
+AUTH_RATE_LIMIT_COUNT = int(AUTH_RATE_LIMIT.split('/')[0])
 
 def test_authenticate_user(test_user):
     db = TestingSessionLocal()
@@ -59,10 +66,10 @@ async def test_get_current_user_missing_payload():
 
 
 def test_login_rate_limited_after_five_attempts(test_user):
-    # 5/minute on /auth/token - the first 5 requests are each judged on their
-    # own merits (wrong password -> 401 every time); the 6th is blocked by
-    # the limiter itself before authentication even runs.
-    for _ in range(5):
+    # AUTH_RATE_LIMIT on /auth/token - each request up to the limit is judged
+    # on its own merits (wrong password -> 401 every time); the request past
+    # the limit is blocked by the limiter itself before authentication runs.
+    for _ in range(AUTH_RATE_LIMIT_COUNT):
         response = client.post('/auth/token', data={
             'username': test_user.username, 'password': 'wrongpassword',
         })
@@ -79,7 +86,7 @@ def test_generate_api_key_rate_limited_after_five_attempts(test_user):
         'username': test_user.username, 'id': test_user.id, 'user_role': test_user.role,
     }
     try:
-        for _ in range(5):
+        for _ in range(AUTH_RATE_LIMIT_COUNT):
             response = client.post('/auth/api-key')
             assert response.status_code == 200
 

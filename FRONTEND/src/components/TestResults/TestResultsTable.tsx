@@ -16,14 +16,8 @@ interface TestResultsTableProps {
   columns?: ColumnDef<TestResultResponse>[]
 }
 
-export function TestResultsTable({
-  page,
-  pageSize,
-  onPageChange,
-  onPageSizeChange,
-  columns = defaultColumns,
-}: TestResultsTableProps) {
-  const { data, isLoading } = useQuery({
+export function useTestResultsQuery(page: number, pageSize: number) {
+  return useQuery({
     queryKey: ["test-results", page, pageSize],
     queryFn: () =>
       TestResultsService.readAllTestResultsGet({
@@ -31,6 +25,16 @@ export function TestResultsTable({
         limit: pageSize,
       }) as unknown as Promise<PaginatedTestResults>,
   })
+}
+
+export function TestResultsTable({
+  page,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+  columns = defaultColumns,
+}: TestResultsTableProps) {
+  const { data, isLoading } = useTestResultsQuery(page, pageSize)
 
   if (isLoading || !data) {
     return <PendingTestResults />

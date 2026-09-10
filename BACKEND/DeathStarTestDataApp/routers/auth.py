@@ -27,6 +27,7 @@ load_dotenv(Path(__file__).resolve().parent.parent.parent / '.env')
 
 SECRET_KEY = os.environ['SECRET_KEY']
 ALGORITHM = 'HS256'
+AUTH_RATE_LIMIT = '15/minute'
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
@@ -148,7 +149,7 @@ async def create_user(db: db_dependency,
 
 
 @router.post("/token", response_model=Token)
-@limiter.limit("15/minute")
+@limiter.limit(AUTH_RATE_LIMIT)
 async def login_for_access_token(request: Request,
                                  form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                                  db: db_dependency):
@@ -162,7 +163,7 @@ async def login_for_access_token(request: Request,
 
 
 @router.post("/api-key", response_model=ApiKeyResponse)
-@limiter.limit("15/minute")
+@limiter.limit(AUTH_RATE_LIMIT)
 async def generate_api_key(request: Request, db: db_dependency,
                            user: Annotated[dict, Depends(get_current_user)]):
     """Generate a new long-lived API key for the logged-in user, replacing
