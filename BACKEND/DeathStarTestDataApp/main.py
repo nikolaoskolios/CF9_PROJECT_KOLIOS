@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -10,15 +12,22 @@ from .database import engine
 from .rate_limit import limiter
 from .routers import auth, test_results, admin, users
 
+# Explicit path (rather than relying on cwd), same as auth.py - this call is
+# idempotent, so it's harmless that auth.py's import above already did it.
+load_dotenv(Path(__file__).resolve().parent.parent / '.env')
+
 app = FastAPI()
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
+# Configurable per-environment (see .env) rather than hardcoded, so a real
+# deployment just sets its actual frontend domain(s) without a code change.
+cors_origins = [origin.strip() for origin in os.environ['CORS_ORIGINS'].split(',')]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://localhost:5173'],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],

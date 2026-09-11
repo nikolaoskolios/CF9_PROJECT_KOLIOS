@@ -9,10 +9,9 @@ venv/
 # Live API credential - grants write access to the backend, never commit
 api_token.json
 
-# BACKEND/.env is intentionally NOT listed here and IS committed - this is a
-# course assignment and the grader needs to clone and run it with zero setup.
-# It only holds a JWT signing key, generated for this repo, not a real secret.
-# Do not follow this pattern in a real deployment.
+# BACKEND/.env
+# BACKEND/.env is commented out on purpose: This is a CF9 project / 
+# course assignment and the teachers / colleagues should be able to clone and run it with zero setup. In real deployment line 12 will be commented out. 
 
 # --- Node (FRONTEND) - redundant with FRONTEND/.gitignore, kept here too ---
 node_modules/
