@@ -1,4 +1,4 @@
-"""A tiny boolean query language for filtering TestResults.
+"""A query language for filtering TestResults.
 
 Grammar (AND binds tighter than OR; parentheses override):
 
@@ -17,10 +17,6 @@ Examples:
     (overall_test_rate < 92) AND (superlaser_concentration_static_check > 95)
     (overall_test_rate < 92) OR (superlaser_concentration_static_check > 95)
 
-Field names are checked against a fixed whitelist and only ever used via
-getattr() on the ORM model, and values are bound through SQLAlchemy's
-column comparison operators (never string-interpolated into SQL), so this
-is not an injection vector despite parsing user-supplied text.
 """
 import re
 

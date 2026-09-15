@@ -17,7 +17,6 @@ class Users(Base):
     api_key_hash = Column(String, unique=True, nullable=True)
 
 
-# One field per subsystem test column in TestData.csv, in CSV column order.
 SUBSYSTEM_TEST_FIELDS = [
     'superlaser_concentration_static_check',
     'hypermatter_reactor_core_startup_test',

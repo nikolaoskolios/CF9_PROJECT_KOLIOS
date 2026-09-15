@@ -37,10 +37,6 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def reset_rate_limits():
-    # The limiter's counters are process-wide and keyed by client address,
-    # which TestClient always reports the same for every test - without this,
-    # one test's requests to a rate-limited route would count against the
-    # next test's limit.
     limiter.reset()
 
 
