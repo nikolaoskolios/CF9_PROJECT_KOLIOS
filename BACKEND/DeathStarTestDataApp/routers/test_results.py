@@ -9,7 +9,7 @@ from ..database import SessionLocal
 from ..query_language import parse_query_expression, QuerySyntaxError
 from .auth import get_current_user, get_current_user_or_api_key
 
-# Query-selectable subsystem test column for GET /test-results/?attribute=...
+
 SubsystemAttribute = Literal[
     'superlaser_concentration_static_check',
     'hypermatter_reactor_core_startup_test',
@@ -23,7 +23,7 @@ SubsystemAttribute = Literal[
     'kyber_crystal_sample_response_test',
 ]
 
-# Always-present columns when filtering the response down to one attribute.
+
 BASE_FIELDS = ['id', 'test_date', 'build', 'overall_test_rate', 'owner_id']
 
 router = APIRouter(
@@ -42,8 +42,6 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
-# Accepts either the usual login JWT or an X-API-Key header - lets scripts
-# upload results with a long-lived API key instead of a 20-minute session token.
 user_or_api_key_dependency = Annotated[dict, Depends(get_current_user_or_api_key)]
 
 class TestResultRequest(BaseModel):

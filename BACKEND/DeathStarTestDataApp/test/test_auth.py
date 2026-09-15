@@ -89,7 +89,4 @@ def test_generate_api_key_rate_limited_after_five_attempts(test_user):
         response = client.post('/auth/api-key')
         assert response.status_code == 429
     finally:
-        # Restore, don't delete - other test modules set this override once
-        # at import time (not per-test), so deleting it would leave it
-        # missing for every test that runs after this one in the suite.
         app.dependency_overrides[get_current_user] = override_get_current_user

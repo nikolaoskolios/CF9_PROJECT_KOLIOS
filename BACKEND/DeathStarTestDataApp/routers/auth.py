@@ -21,8 +21,6 @@ router = APIRouter(
     tags=['auth']
 )
 
-# Explicit path (rather than relying on cwd) so this loads the same way
-# whether the app is started from BACKEND/ or tests are run from elsewhere.
 load_dotenv(Path(__file__).resolve().parent.parent.parent / '.env')
 
 SECRET_KEY = os.environ['SECRET_KEY']
